@@ -1,0 +1,62 @@
+You read one batch of a 360 photo set for Mot Dang (motdang.net), a directory of places in northern Thailand.
+The Mac has already levelled every sphere, read every sign with Apple Vision at full camera resolution,
+matched signs to Mot Dang records, and cut crops of everything it could not settle. Your job is the part
+a machine got wrong or could not see: every legible word, every place, every detail.
+
+Folder: {OUT}
+Batch:  {OUT}/batches/{BATCH}.txt   (first line = the image pages; then one block per moment)
+
+Reading the batch file:
+  == mNNN <frames> lead <frame> <time> <lat,lng> sweep wNNN.jpg
+  near: records within 60 m (id name)
+  sNNNN ... = <record>  :: text     settled: OCR matched that record by name; no image. Trust it.
+  cNNNN ... tNNN.jpg :: text(conf)  a sign crop on sheets/tNNN.jpg. The OCR text is a guess; read the crop.
+  lNNNN ... <label> <conf> lNNN.jpg a subject Apple Vision flagged, on sheets/lNNN.jpg.
+  "~<record>" after a sheet = OCR half-matched that record; confirm or reject.
+Every line carries its frame and direction (y = yaw, p = pitch, degrees on the levelled sphere).
+
+Every turn re-sends everything already in your context, so turns are the cost. Five turns, no more:
+batch file · all pages · all zooms (one Bash) · all zoom images · one Write.
+
+Steps, in this order:
+1. Read the batch file.
+2. Open every page on its first line in ONE turn (parallel Read calls): sheets/*.jpg and sweep/*.jpg.
+   Crops are labelled with their id in a black bar.
+3. Read every crop. Then read every sweep band left to right for what no crop covers. Sweep bands are
+   low resolution on purpose; they show where to look, not what a sign says.
+4. Zoom only when a crop or sweep leaves a fact unsettled:
+     python3 ~/.claude/bin/nitpick/nitpick.py zoom "{OUT}" <frame> <yaw> <pitch> --fov 20
+   Add --n 1 to see the same direction in the frames either side, and pick the sharper read.
+   Use the smallest fov that holds the thing. Decide every zoom from the pages first, run them all in one
+   Bash call, open all the results in one turn. Do not open tiles/, band/ or the source photographs.
+5. Write {OUT}/reads/{BATCH}.jsonl in ONE Write, one JSON object per line, then reply.
+
+One line per thing found:
+{"id": "<crop id, or zoom file name, or sweep:<frame>:<yaw>>", "frame": "...", "yaw": 0, "pitch": 0, "fov": 20,
+ "kind": "place|street-art|spirit-house|parking|merch|hanging|hot-spring|rider|fact",
+ "name": "<exactly as written, Thai or Latin, tone marks included; empty if not legible>",
+ "name_other": "<the sign's other-language name, if any>",
+ "what_en": "<noodle shop, tyre shop, wat, mural, PEA box wrap ...>", "what_th": "<same, natural Thai>",
+ "record_id": "<a near/~ id when the sign or frontage shows it is that place, else null>",
+ "new": true|false, "phone": "", "hours": "", "line_id": "", "web": "", "prices": "",
+ "text": "<every other legible word on it, verbatim>",
+ "photo": 0-3, "confidence": "high|medium|low"}
+
+Leave out empty fields. "photo" rates the frame as a picture of that thing (0 none, 3 lead picture). yaw/pitch/fov frame it;
+the picture is re-cut from the sphere later, so a hand or the rider at the edge costs nothing.
+A crop with nothing on it (a reflection, a pattern) or one repeating a place already written gets no line.
+
+Look for, in every sweep, even when no crop points there: spirit houses, murals, graffiti, painted or
+wrapped transformer and traffic-light boxes (PEA wrappers too), motorbikes parked in a row, merchandise,
+things hanging from ceilings or awnings, hot springs, for-rent and for-sale signs with phones, banners
+with an event date, bus or songthaew stops, ATMs, road works, flooding. The rider in a frame looking cool
+(visor down) gets kind "rider".
+
+Rules:
+- Record what you can see. A name that is not legible stays empty. A record match needs the sign or an
+  unmistakable frontage.
+- Copy Thai text exactly. Do not transliterate or translate a name.
+- The same place in two frames gets one line, from the sharper frame.
+- Write only inside {OUT}/reads/. Touch nothing else. Nothing is published from this pass.
+
+Reply in at most four lines: crops read, zooms taken, places (new / matched), and the three best finds.

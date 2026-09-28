@@ -1,0 +1,21 @@
+nitpick — 360 photo sets, read on the Mac first
+
+1. Pre-pass (local, no model; resumable, run it in the background):
+     python3 ~/.claude/bin/nitpick/nitpick.py prep <OUT> <folder or files> --prov cm,cr
+   <OUT> = a folder beside the ride, e.g. mot-dang/_incoming/gopro-<date>/nitpick
+   It prints the image-token estimate and the batch count.
+
+2. Reading: one fresh agent per batch, all batches in one message so they run together.
+   Prompt = ~/.claude/bin/nitpick/PROMPT.txt with {OUT} and {BATCH} (b01, b02 ...) filled in.
+   A batch holds at most 12 image pages (--pages to change). The prompt holds each agent to five turns;
+   every turn re-sends the whole context, so turn count sets the cost more than page count.
+
+3. Merge: reads/*.jsonl feed the ride's own to_motdang / to_field / place-photo steps. Their direction is
+   yaw/pitch/fov on the levelled sphere; frames.json holds each frame's levelling rotation (R) and path.
+
+Cost check at any time:
+     python3 ~/.claude/bin/nitpick/nitpick.py cost <OUT>
+
+Test run, 28 Sep 2026: 12 Max 2 frames from 25 Sep (a mall walk): 288 tiles read, 114 sign crops,
+10 label crops, one batch, one reader: 7 turns, 22 places, 8 zooms.
+Per frame against the 23 Sep sheet readers: fresh input 5.3k vs 13-16k, cache reads 41k vs 214-262k.
