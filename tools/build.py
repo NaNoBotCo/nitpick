@@ -226,9 +226,10 @@ def page(lang):
 <link rel="alternate" hreflang="en" href="{SITE}"><link rel="alternate" hreflang="th" href="{SITE}th/">
 <meta property="og:type" content="website"><meta property="og:site_name" content="NaNoBotCo">
 <meta property="og:title" content="{e(t["title"])}: {e(t["sub"])}"><meta property="og:description" content="{e(t["desc"])}">
-<meta property="og:url" content="{SITE}{"th/" if th else ""}"><meta property="og:image" content="{SITE}card.jpg">
+<meta property="og:url" content="{SITE}{"th/" if th else ""}"><meta property="og:image" content="{SITE}card{"-th" if th else ""}.jpg">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{SITE}card.jpg">
+<meta property="og:image:alt" content="{"บัตรแชร์: Nitpick จับทุกป้าย อ่านทุกป้ายในภาพ 360 องศา บนภาพถนนในเชียงใหม่" if th else "Card: Nitpick, Reading every sign in a 360 photo, over a photo of a Chiang Mai street"}">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{SITE}card{"-th" if th else ""}.jpg">
 <link rel="icon" href="{up}icon.svg" type="image/svg+xml">
 <style>{CSS}</style></head>
 <body{' class="th"' if th else ""}>
